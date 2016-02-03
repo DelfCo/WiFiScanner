@@ -55,7 +55,9 @@ namespace WiFiScanner
                     foreach (WiFiAvailableNetwork thisNetwork in a.NetworkReport.AvailableNetworks)
                     {
                         // skip hidden (no SSID) networks, skip Wi-Fi Direct devices, skip ad hoc 
-                        if ((thisNetwork.Ssid.Length != 0) && (thisNetwork.IsWiFiDirect == false) && (thisNetwork.NetworkKind == WiFiNetworkKind.Infrastructure))
+                        if ((thisNetwork.Ssid.Length != 0) && 
+                            (thisNetwork.IsWiFiDirect == false) && 
+                            (thisNetwork.NetworkKind == WiFiNetworkKind.Infrastructure))
                         {
                             displayList.Add(thisNetwork);
                         }
@@ -70,6 +72,46 @@ namespace WiFiScanner
         private async void ScanButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await DoNetworkScanAsync(APList);
+        }
+    }
+
+    public class FrequencyToChannelConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            switch ((int)value)
+            {
+                case 2412000:
+                    return ("1");
+                case 2417000:
+                    return ("2");
+                case 2422000:
+                    return ("3");
+                case 2427000:
+                    return ("4");
+                case 2432000:
+                    return ("5");
+                case 2437000:
+                    return ("6");
+                case 2442000:
+                    return ("7");
+                case 2447000:
+                    return ("8");
+                case 2452000:
+                    return ("9");
+                case 2457000:
+                    return ("10");
+                case 2462000:
+                    return ("11");
+                default:
+                    return ((int)value).ToString();
+            }
+
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            return value;
         }
     }
 }

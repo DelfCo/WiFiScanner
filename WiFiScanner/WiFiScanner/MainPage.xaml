@@ -7,6 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <local:FrequencyToChannelConverter x:Key="freqConverter" />
+    </Page.Resources>
+    
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="10,50,10,100">
         <TextBlock x:Name="TitleBlock" Width="200" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="32">My Wi-Fi Scanner</TextBlock>
         <Button x:Name="ScanButton" Width="100" Content="Scan" HorizontalAlignment="Right" VerticalAlignment="Top" Tapped="ScanButton_Tapped"/>
@@ -16,12 +20,12 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock Text="Name: " />
                         <TextBlock Text="{Binding Ssid}"/>
-                        <TextBlock Text=", " />
-                        <TextBlock Text="Signal: " />
+                        <TextBlock Text="," />
+                        <TextBlock Text=" Signal: " />
                         <TextBlock Text="{Binding SignalBars}" />
-                        <TextBlock Text=", " />
-                        <TextBlock Text="{Binding ChannelCenterFrequencyInKilohertz}"/>
-                        <TextBlock Text="kHz" />
+                        <TextBlock Text="," />
+                        <TextBlock Text=" Channel: " />
+                        <TextBlock Text="{Binding Path=ChannelCenterFrequencyInKilohertz, Converter={StaticResource freqConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
