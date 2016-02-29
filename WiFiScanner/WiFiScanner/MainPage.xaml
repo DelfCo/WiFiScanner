@@ -9,6 +9,7 @@
 
     <Page.Resources>
         <local:FrequencyToChannelConverter x:Key="freqConverter" />
+        <local:BarsToCharacterConverter x:Key="barsConverter" />
     </Page.Resources>
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="10,50,10,100">
@@ -17,15 +18,12 @@
         <ListView x:Name="APList" Margin="5,33,5,5" IsDoubleTapEnabled="False" IsHoldingEnabled="False" IsRightTapEnabled="False">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock Text="Name: " />
-                        <TextBlock Text="{Binding Ssid}"/>
-                        <TextBlock Text="," />
-                        <TextBlock Text=" Signal: " />
-                        <TextBlock Text="{Binding SignalBars}" />
-                        <TextBlock Text="," />
-                        <TextBlock Text=" Channel: " />
-                        <TextBlock Text="{Binding Path=ChannelCenterFrequencyInKilohertz, Converter={StaticResource freqConverter}}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                        <TextBlock Width ="Auto" Text="{Binding Path=SignalBars, Converter={StaticResource barsConverter}}" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Bottom"/>
+                        <TextBlock Width ="Auto" Text="Name: " Margin="0,0,10,0"  VerticalAlignment="Bottom"/>
+                        <TextBlock Width="200"   Text="{Binding Ssid}" VerticalAlignment="Bottom"/>
+                        <TextBlock Width ="Auto" Text=" Channel: " Margin="0,0,10,0"  VerticalAlignment="Bottom"/>
+                        <TextBlock Width ="Auto" Text="{Binding Path=ChannelCenterFrequencyInKilohertz, Converter={StaticResource freqConverter}}" Margin="0,0,5,0"  VerticalAlignment="Bottom"/>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

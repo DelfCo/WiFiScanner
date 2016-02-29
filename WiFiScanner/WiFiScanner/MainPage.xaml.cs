@@ -47,21 +47,39 @@ namespace WiFiScanner
                 await a.ScanAsync();
                 int numNetworksAfter = a.NetworkReport.AvailableNetworks.Count;
 
+                List<WiFiAvailableNetwork> apList = new List<WiFiAvailableNetwork>();
+                List<WiFiAvailableNetwork> displayList = new List<WiFiAvailableNetwork>();
+
                 // Populate the ListView with a list of appropriate network APs.
                 if (numNetworksAfter > 0)
                 {
                     // fill a list of valid network APs
-                    List<WiFiAvailableNetwork> displayList = new List<WiFiAvailableNetwork>();
                     foreach (WiFiAvailableNetwork thisNetwork in a.NetworkReport.AvailableNetworks)
                     {
                         // skip hidden (no SSID) networks, skip Wi-Fi Direct devices, skip ad hoc 
-                        if ((thisNetwork.Ssid.Length != 0) && 
-                            (thisNetwork.IsWiFiDirect == false) && 
+                        if ((thisNetwork.Ssid.Length != 0) &&
+                            (thisNetwork.IsWiFiDirect == false) &&
                             (thisNetwork.NetworkKind == WiFiNetworkKind.Infrastructure))
+                        {
+                            apList.Add(thisNetwork);
+                        }
+                    }
+
+                    // Where there are duplicate SSIDs, remove all but the one AP with highest signal strength
+                    // Sort the list by SSID so we can remove duplicates
+                    apList.Sort(CompareByName);
+                    // copy from apList to displayList, iff displayList doesn't already have that SSID
+                    foreach (WiFiAvailableNetwork thisNetwork in apList)
+                    {
+                        // parts.Find(x => x.PartName.Contains("seat")));
+                        if ((displayList.Find(x => x.Ssid.Contains(thisNetwork.Ssid))) == null)
                         {
                             displayList.Add(thisNetwork);
                         }
                     }
+
+                    // Now, sort the list on signal strength for display.
+                    displayList.Sort(CompareBySignalBars);
 
                     // data bind that list to the ListView
                     populateList.ItemsSource = displayList;
@@ -69,49 +87,133 @@ namespace WiFiScanner
             }
         }
 
+        // Compare by strength in bars, highest value first
+        private static int CompareBySignalBars(WiFiAvailableNetwork left, WiFiAvailableNetwork right)
+        {
+            return right.SignalBars.CompareTo(left.SignalBars); // higher before lower
+        }
+
+        // Compare by SSID, and by signal bars when SSIDs are same. Alpha, a-z, signal bars from high to low
+        private static int CompareByName(WiFiAvailableNetwork left, WiFiAvailableNetwork right)
+        {
+            int ret = left.Ssid.CompareTo(right.Ssid); // a before z
+            if (ret == 0)
+            {
+                ret = right.SignalBars.CompareTo(left.SignalBars); // higher before lower
+            }
+
+            return ret;
+        }
+
         private async void ScanButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await DoNetworkScanAsync(APList);
         }
     }
+    public class BarsToCharacterConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            Byte val = (Byte)value;
+            Char retval = '?';
 
+
+            // return the Segoe MDL2 Assets glyph for the number of bars given
+            // requires that the textbox you're displaying be set to use Segoe MDL2 Assets
+            switch (val)
+            {
+                case 0:
+                    retval = (Char)57829; // 0xE9040;
+                    break;
+                case 1:
+                    retval = (Char)57830; // 0xE905;
+                    break;
+                case 2:
+                    retval = (Char)57831; // 0xE906;
+                    break;
+                case 3:
+                    retval = (Char)57832; // 0xE907;
+                    break;
+                case 4:
+                    retval = (Char)57833; // 0xE908;
+                    break;
+                default:
+                    {
+                        retval = '!';
+                        break;
+                    }
+            }
+            return retval;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class FrequencyToChannelConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            switch ((int)value)
+            int val = (int)value;
+            string retval = "0";
+
+            switch (val)
             {
                 case 2412000:
-                    return ("1");
+                    retval = "1";
+                    break;
                 case 2417000:
-                    return ("2");
+                    retval = "2";
+                    break;
                 case 2422000:
-                    return ("3");
+                    retval = "3";
+                    break;
                 case 2427000:
-                    return ("4");
+                    retval = "4";
+                    break;
                 case 2432000:
-                    return ("5");
+                    retval = "5";
+                    break;
                 case 2437000:
-                    return ("6");
+                    retval = "6";
+                    break;
                 case 2442000:
-                    return ("7");
+                    retval = "7";
+                    break;
                 case 2447000:
-                    return ("8");
+                    retval = "8";
+                    break;
                 case 2452000:
-                    return ("9");
+                    retval = "9";
+                    break;
                 case 2457000:
-                    return ("10");
+                    retval = "10";
+                    break;
                 case 2462000:
-                    return ("11");
+                    retval = "11";
+                    break;
                 default:
-                    return ((int)value).ToString();
+                    {
+                        if ((val >= 5180000) && (val <= 5320000))
+                        { retval = (((val - 5180000) / 5000) + 38).ToString(); }
+                        else if ((val >= 5500000) && (val <= 5825000))
+                        { retval = (((val - 5500000) / 5000) + 100).ToString(); }
+                        else
+                        { retval = val.ToString(); }
+                        break;
+                    }
             }
+            return $"{retval}";
 
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return value;
+            throw new NotImplementedException();
         }
     }
+
+
+
 }
