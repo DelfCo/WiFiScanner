@@ -1,12 +1,10 @@
 # WiFiScanner
-Shows you local WiFi access points
+Shows you local WiFi access points.
+
+Shows signal strength, and only shows you the strongest AP when it sees more than one with the same name.
+
+This implementation uses converters to show channel number and signal strength (using the built-in wifi strength glyphs).
 
 ## To do list:
-1. Add some code
-2. Try to do this not using MVVM, by using converters:
-
-    a. Use converters to show channel numbers
-    
-    b. Use a more advanced converter to show signal strength as a bar graphic
-    
-3. Redo the whole thing so it uses MVVM.
+1. Change the algorithm for unique APs, to be band-aware and show duplicate APs if they're in different bands.
+2. Redo the whole thing so it uses MVVM.
