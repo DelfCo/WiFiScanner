@@ -42,48 +42,28 @@ namespace WiFiScanner
             }
             else
             {
+                // use the first adapter because I'm too lazy to implement selecting from multiple adapters
                 WiFiAdapter a = adapters[0];
 
+                // Scan for available networks
                 await a.ScanAsync();
-                int numNetworksAfter = a.NetworkReport.AvailableNetworks.Count;
 
-                List<WiFiAvailableNetwork> apList = new List<WiFiAvailableNetwork>();
+                // Filter and sort the networks, using Linq for Objects syntax.
                 List<WiFiAvailableNetwork> displayList = new List<WiFiAvailableNetwork>();
+                IEqualityComparer<WiFiAvailableNetwork> ssidCmp = new SSIDComparer();
 
-                // Populate the ListView with a list of appropriate network APs.
-                if (numNetworksAfter > 0)
-                {
-                    // fill a list of valid network APs
-                    foreach (WiFiAvailableNetwork thisNetwork in a.NetworkReport.AvailableNetworks)
-                    {
-                        // skip hidden (no SSID) networks, skip Wi-Fi Direct devices, skip ad hoc 
-                        if ((thisNetwork.Ssid.Length != 0) &&
-                            (thisNetwork.IsWiFiDirect == false) &&
-                            (thisNetwork.NetworkKind == WiFiNetworkKind.Infrastructure))
-                        {
-                            apList.Add(thisNetwork);
-                        }
-                    }
+                // Remove networks we don't want to display, like empty SSIDs, WiFiDirect endpoints, and infrastructure endpoints, and then throw out duplicate SSIDs.
+                displayList = a.NetworkReport.AvailableNetworks
+                    .Where(thisNetwork => (thisNetwork.Ssid.Length != 0) && (thisNetwork.IsWiFiDirect == false) && (thisNetwork.NetworkKind == WiFiNetworkKind.Infrastructure))
+                    .Distinct(ssidCmp)
+                    .ToList();
 
-                    // Where there are duplicate SSIDs, remove all but the one AP with highest signal strength
-                    // Sort the list by SSID so we can remove duplicates
-                    apList.Sort(CompareByName);
-                    // copy from apList to displayList, iff displayList doesn't already have that SSID
-                    foreach (WiFiAvailableNetwork thisNetwork in apList)
-                    {
-                        // parts.Find(x => x.PartName.Contains("seat")));
-                        if ((displayList.Find(x => x.Ssid.Contains(thisNetwork.Ssid))) == null)
-                        {
-                            displayList.Add(thisNetwork);
-                        }
-                    }
+                // Sort the list by signal strength, and populate the control.
+                displayList.Sort(CompareBySignalBars);
 
-                    // Now, sort the list on signal strength for display.
-                    displayList.Sort(CompareBySignalBars);
+                // data bind the list to the ListView
+                populateList.ItemsSource = displayList;
 
-                    // data bind that list to the ListView
-                    populateList.ItemsSource = displayList;
-                }
             }
         }
 
@@ -214,6 +194,17 @@ namespace WiFiScanner
         }
     }
 
+    public class SSIDComparer : IEqualityComparer<WiFiAvailableNetwork>
+    {
+        public bool Equals(WiFiAvailableNetwork left, WiFiAvailableNetwork right)
+        {
+            return left.Ssid == right.Ssid;
+        }
 
+        public int GetHashCode(WiFiAvailableNetwork foo)
+        {
+            return foo.GetHashCode();
+        }
+    }
 
 }
